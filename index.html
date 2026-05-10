@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* [STYLE SAMA PERSIS DENGAN KODE SEBELUMNYA - DIKETIK ULANG AGAR LENGKAP] */
 :root {
   --bg: #0a0a0f;
   --bg-elevated: #12121a;
@@ -128,7 +127,6 @@ header {
 .btn-primary:hover, .btn-tele:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
 .btn-tele:hover { border-color: #26A5E4; color: #26A5E4; }
 
-/* Hero */
 .hero {
   max-width: 1400px; margin: 0 auto;
   padding: 2rem 1rem 1.5rem;
@@ -151,7 +149,6 @@ header {
 
 .hero-sub { font-size: 0.95rem; color: var(--text-muted); max-width: 500px; margin: 0 auto; }
 
-/* Key Access Panel */
 .key-panel {
   max-width: 480px;
   margin: 2rem auto;
@@ -159,6 +156,7 @@ header {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
+  transition: all 0.2s ease;
 }
 
 .key-input-group {
@@ -212,7 +210,6 @@ header {
   margin-top: 0.75rem;
 }
 
-/* User Badge */
 .user-badge {
   display: flex;
   align-items: center;
@@ -242,14 +239,12 @@ header {
   background: rgba(239,68,68,0.2);
 }
 
-/* Main Content (hidden until key valid) */
 .main-content {
   display: none;
   max-width: 1400px;
   margin: 0 auto;
   padding: 1rem;
 }
-
 .main-content.active { display: block; }
 
 .search-container { max-width: 560px; margin-bottom: 1.5rem; }
@@ -478,6 +473,11 @@ header {
   transition: opacity 0.3s;
 }
 .copy-notification.show { opacity: 1; }
+.loader {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
 </style>
 </head>
 <body>
@@ -500,7 +500,6 @@ header {
           <line x1="12" y1="21" x2="12" y2="23"/>
         </svg>
       </button>
-      <!-- PERBAIKAN: Redirect ke Telegram bot @zychoid -->
       <a class="btn-tele" href="https://t.me/zychoid" target="_blank">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21.5 4.5L2.5 12.5L8.5 14.5L12.5 21.5L21.5 4.5Z"/>
@@ -521,7 +520,6 @@ header {
   <p class="hero-sub">Koleksi prompt jailbreak untuk berbagai macam AI. Akses terbatas — hubungi @zychoid untuk key.</p>
 </div>
 
-<!-- Key Access Panel -->
 <div id="keyPanel" class="key-panel">
   <div class="key-input-group">
     <input type="text" id="keyInput" placeholder="Masukkan Access Key" autocomplete="off">
@@ -534,7 +532,6 @@ header {
   </div>
 </div>
 
-<!-- Main Content -->
 <div id="mainContent" class="main-content">
   <div class="search-container">
     <div class="search-box">
@@ -552,7 +549,7 @@ header {
   <div class="main-layout">
     <div class="sidebar">
       <div class="sidebar-label">Kategori</div>
-      <div class="cat-list" id="catList"><div class="loader">Loading...</div></div>
+      <div class="cat-list" id="catList"><div class="loader">Memuat kategori...</div></div>
     </div>
     <div class="content">
       <div class="content-header">
@@ -562,7 +559,7 @@ header {
           <div><select class="sort-select" id="sortSel"><option value="newest">Terbaru</option><option value="oldest">Terlama</option><option value="az">A - Z</option></select></div>
         </div>
       </div>
-      <div class="grid" id="grid"><div class="loader">Loading prompts...</div></div>
+      <div class="grid" id="grid"><div class="loader">Memuat prompt...</div></div>
       <div class="pagination" id="pagination"></div>
     </div>
   </div>
@@ -577,14 +574,16 @@ header {
 const SUPA_URL = 'https://ihykejeacueeitthgkze.supabase.co';
 const SUPA_KEY = 'sb_publishable_W7N9zRqZlirQdLQvURiexA_Mj8Nvx5C';
 const BOT_TOKEN = '8678259988:AAE4v3hBp2DWexyu4IcBItsWHURSY3drnhY';
-// PERBAIKAN: Ganti dengan Chat ID @zychoid (ambil dari bot @userinfobot)
-const ADMIN_CHAT_ID = '7375069898'; // Chat ID untuk @zychoid, ganti sesuai hasil dari /id di bot
-
+const ADMIN_CHAT_ID = '7375069898';
 const { createClient } = supabase;
 const db = createClient(SUPA_URL, SUPA_KEY);
 
 let validKeys = [];
 let currentKey = null;
+let pollingInterval = null;
+let prompts = [], cats = [];
+let activeCat = 'all', query = '', sort = 'newest', lengthFilter = 'all', curPrompt = null, currentPage = 1;
+const ITEMS_PER_PAGE = 10;
 
 function loadKeys() {
   const saved = localStorage.getItem('promptvault_keys');
@@ -594,7 +593,7 @@ function loadKeys() {
       const now = Date.now();
       validKeys = keys.filter(k => k.expiry > now);
       saveKeys();
-    } catch(e) {}
+    } catch(e) { validKeys = []; }
   }
 }
 
@@ -607,12 +606,14 @@ function addKey(key, days) {
   saveKeys();
 }
 
-function removeKey(key) { validKeys = validKeys.filter(k => k.key !== key); saveKeys(); }
-
 function checkKey(key) {
   const found = validKeys.find(k => k.key === key);
   if (!found) return false;
-  if (found.expiry < Date.now()) { validKeys = validKeys.filter(k => k.key !== key); saveKeys(); return false; }
+  if (found.expiry < Date.now()) { 
+    validKeys = validKeys.filter(k => k.key !== key); 
+    saveKeys(); 
+    return false; 
+  }
   return found;
 }
 
@@ -620,7 +621,10 @@ function isKeyValid() {
   const savedKey = localStorage.getItem('current_key');
   if (!savedKey) return false;
   const keyData = checkKey(savedKey);
-  if (keyData) { currentKey = savedKey; return true; }
+  if (keyData) { 
+    currentKey = savedKey; 
+    return true; 
+  }
   localStorage.removeItem('current_key');
   return false;
 }
@@ -630,6 +634,7 @@ async function verifyKey() {
   const key = keyInput.value.trim();
   const statusDiv = document.getElementById('keyStatus');
   if (!key) { statusDiv.className = 'key-status error'; statusDiv.innerHTML = '❌ Masukkan key terlebih dahulu!'; return; }
+  
   const existing = checkKey(key);
   if (existing) {
     const expiryDate = new Date(existing.expiry).toLocaleDateString('id-ID');
@@ -637,11 +642,7 @@ async function verifyKey() {
     statusDiv.innerHTML = `✅ Key valid! Akses hingga ${expiryDate}`;
     localStorage.setItem('current_key', key);
     currentKey = key;
-    document.getElementById('keyPanel').style.display = 'none';
-    document.getElementById('mainContent').classList.add('active');
-    document.getElementById('userBadge').style.display = 'flex';
-    document.getElementById('keyExpiry').innerHTML = `🔑 valid until ${expiryDate}`;
-    loadPrompts();
+    enterVault(expiryDate);
   } else {
     try {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -655,7 +656,6 @@ async function verifyKey() {
       });
       statusDiv.className = 'key-status warning';
       statusDiv.innerHTML = '⏳ Key tidak dikenal. Menunggu approval admin di @zychoid...';
-      // Mulai polling untuk cek approval setiap 5 detik
       startApprovalPolling(key);
     } catch(e) {
       statusDiv.className = 'key-status error';
@@ -664,28 +664,34 @@ async function verifyKey() {
   }
 }
 
-let pollingInterval = null;
 function startApprovalPolling(key) {
   if (pollingInterval) clearInterval(pollingInterval);
   pollingInterval = setInterval(async () => {
     if (checkKey(key)) {
       clearInterval(pollingInterval);
-      const expiryDate = new Date(checkKey(key).expiry).toLocaleDateString('id-ID');
+      pollingInterval = null;
+      const keyData = checkKey(key);
+      const expiryDate = new Date(keyData.expiry).toLocaleDateString('id-ID');
       document.getElementById('keyStatus').className = 'key-status success';
       document.getElementById('keyStatus').innerHTML = `✅ Key approved! Akses hingga ${expiryDate}`;
       localStorage.setItem('current_key', key);
       currentKey = key;
-      document.getElementById('keyPanel').style.display = 'none';
-      document.getElementById('mainContent').classList.add('active');
-      document.getElementById('userBadge').style.display = 'flex';
-      document.getElementById('keyExpiry').innerHTML = `🔑 valid until ${expiryDate}`;
-      loadPrompts();
+      enterVault(expiryDate);
     }
   }, 5000);
   setTimeout(() => { if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; } }, 120000);
 }
 
+function enterVault(expiryDate) {
+  document.getElementById('keyPanel').style.display = 'none';
+  document.getElementById('mainContent').classList.add('active');
+  document.getElementById('userBadge').style.display = 'flex';
+  document.getElementById('keyExpiry').innerHTML = `🔑 valid until ${expiryDate}`;
+  loadPrompts();
+}
+
 function logout() {
+  if (pollingInterval) clearInterval(pollingInterval);
   localStorage.removeItem('current_key');
   currentKey = null;
   document.getElementById('keyPanel').style.display = 'block';
@@ -694,46 +700,56 @@ function logout() {
   document.getElementById('keyInput').value = '';
   document.getElementById('keyStatus').className = 'key-status';
   document.getElementById('keyStatus').innerHTML = '';
-  if (pollingInterval) clearInterval(pollingInterval);
+  prompts = [];
+  cats = [];
+  document.getElementById('grid').innerHTML = '<div class="loader">Akses dimulai setelah verifikasi key</div>';
+  document.getElementById('catList').innerHTML = '<div class="loader">Kategori akan tampil setelah login</div>';
 }
 
-// Fungsi approve via console (untuk admin jika testing)
-window.approveKey = function(key, days) { addKey(key, days); if (currentKey === key) location.reload(); return true; };
-window.rejectKey = function(key) { if (currentKey === key) { alert('Key ditolak'); logout(); } };
-
-// Load Prompts dari Supabase
-let cats = [], prompts = [], activeCat = 'all', query = '', sort = 'newest', lengthFilter = 'all', curPrompt = null, currentPage = 1;
-const ITEMS_PER_PAGE = 10;
-
 async function loadPrompts() {
-  const [{ data: c, error: ce }, { data: p, error: pe }, { data: pc }] = await Promise.all([
-    db.from('categories').select('*').order('name'),
-    db.from('prompts').select('*').order('created_at', { ascending: false }),
-    db.from('prompt_categories').select('*')
-  ]);
-  if (ce || pe) { document.getElementById('grid').innerHTML = '<div class="empty">Gagal load data</div>'; return; }
-  cats = c || [];
-  prompts = (p || []).map(prompt => {
-    prompt.category_ids = (pc || []).filter(x => x.prompt_id === prompt.id).map(x => x.category_id);
-    prompt.categories = cats.filter(c => prompt.category_ids.includes(c.id));
-    prompt.charCount = prompt.content ? prompt.content.length : 0;
-    prompt.lengthClass = prompt.charCount < 1000 ? 'short' : (prompt.charCount <= 4000 ? 'medium' : 'long');
-    return prompt;
-  });
-  document.getElementById('statP').textContent = prompts.length;
-  document.getElementById('statC').textContent = cats.length;
-  renderCats();
-  applyFiltersAndRender();
+  try {
+    const [{ data: c, error: ce }, { data: p, error: pe }, { data: pc, error: pce }] = await Promise.all([
+      db.from('categories').select('*').order('name'),
+      db.from('prompts').select('*').order('created_at', { ascending: false }),
+      db.from('prompt_categories').select('*')
+    ]);
+    if (ce || pe) { 
+      document.getElementById('grid').innerHTML = '<div class="empty">Gagal memuat data, coba refresh</div>'; 
+      console.error(ce, pe);
+      return; 
+    }
+    cats = c || [];
+    const promptCategories = pc || [];
+    prompts = (p || []).map(prompt => {
+      const catIds = promptCategories.filter(x => x.prompt_id === prompt.id).map(x => x.category_id);
+      prompt.category_ids = catIds;
+      prompt.categories = cats.filter(c => catIds.includes(c.id));
+      prompt.charCount = prompt.content ? prompt.content.length : 0;
+      prompt.lengthClass = prompt.charCount < 1000 ? 'short' : (prompt.charCount <= 4000 ? 'medium' : 'long');
+      return prompt;
+    });
+    document.getElementById('statP').textContent = prompts.length;
+    document.getElementById('statC').textContent = cats.length;
+    renderCats();
+    applyFiltersAndRender();
+  } catch (err) {
+    console.error(err);
+    document.getElementById('grid').innerHTML = '<div class="empty">Error koneksi database</div>';
+  }
 }
 
 function renderCats() {
   const el = document.getElementById('catList');
   let html = `<button class="cat-item ${activeCat === 'all' ? 'active' : ''}" onclick="setCat('all')"><span>📁 Semua</span><span class="cat-count">${prompts.length}</span></button>`;
-  cats.forEach(c => { const n = prompts.filter(p => p.category_ids.includes(c.id)).length; html += `<button class="cat-item ${activeCat === c.id ? 'active' : ''}" onclick="setCat('${c.id}')"><span>📂 ${escapeHtml(c.name)}</span><span class="cat-count">${n}</span></button>`; });
+  cats.forEach(c => { 
+    const n = prompts.filter(p => p.category_ids.includes(c.id)).length; 
+    html += `<button class="cat-item ${activeCat === c.id ? 'active' : ''}" onclick="setCat('${c.id}')"><span>📂 ${escapeHtml(c.name)}</span><span class="cat-count">${n}</span></button>`; 
+  });
   el.innerHTML = html;
 }
 
 function setCat(id) { activeCat = id; currentPage = 1; renderCats(); applyFiltersAndRender(); }
+
 function getFilteredData() {
   let data = [...prompts];
   if (activeCat !== 'all') data = data.filter(p => p.category_ids.includes(activeCat));
@@ -744,30 +760,35 @@ function getFilteredData() {
   else data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
   return data;
 }
+
 function applyFiltersAndRender() {
   const filtered = getFilteredData();
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+  if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
   const start = (currentPage - 1) * ITEMS_PER_PAGE;
   const pageData = filtered.slice(start, start + ITEMS_PER_PAGE);
   document.getElementById('countLabel').textContent = filtered.length;
   renderGrid(pageData);
   renderPagination(filtered.length, totalPages);
 }
+
 function renderGrid(data) {
   const grid = document.getElementById('grid');
-  if (!data.length) { grid.innerHTML = '<div class="empty">Belum ada prompt</div>'; return; }
+  if (!data.length) { grid.innerHTML = '<div class="empty">Belum ada prompt dalam kategori ini</div>'; return; }
   grid.innerHTML = data.map(p => `<div class="card" onclick="openModal('${p.id}')"><div class="card-header"><div class="card-badge">📁 ${escapeHtml(p.categories[0]?.name || 'Umum')}</div>${(new Date() - new Date(p.created_at)) / (1000 * 60 * 60) <= 4 ? '<span class="new-badge">NEW!</span>' : ''}</div><div class="card-title">${escapeHtml(p.title)}</div><div class="card-preview">${escapeHtml(p.content.substring(0, 100))}...</div><div class="card-stats"><div class="char-count">📄 ${p.charCount >= 1000 ? (p.charCount/1000).toFixed(1)+'k' : p.charCount} karakter</div></div><div class="card-footer"><div class="card-actions"><button class="copy-btn" onclick="event.stopPropagation();quickCopy('${p.id}',this)">📋 Copy</button><button class="download-btn" onclick="event.stopPropagation();quickDownload('${p.id}',this)">💾 Download</button></div><span class="card-date">${new Date(p.created_at).toLocaleDateString('id-ID')}</span></div></div>`).join('');
 }
+
 function renderPagination(totalItems, totalPages) {
   const pagination = document.getElementById('pagination');
-  if (totalItems <= ITEMS_PER_PAGE) { pagination.innerHTML = ''; return; }
+  if (totalItems <= ITEMS_PER_PAGE || totalPages <= 1) { pagination.innerHTML = ''; return; }
   let html = '';
   if (currentPage > 1) html += `<button class="page-btn" onclick="changePage(${currentPage-1})">‹</button>`;
   for (let i = Math.max(1, currentPage-2); i <= Math.min(totalPages, currentPage+2); i++) html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
   if (currentPage < totalPages) html += `<button class="page-btn" onclick="changePage(${currentPage+1})">›</button>`;
   pagination.innerHTML = html;
 }
+
 function changePage(page) { currentPage = page; applyFiltersAndRender(); }
 function openModal(id) { curPrompt = prompts.find(x => x.id === id); if (!curPrompt) return; document.getElementById('mTitle').textContent = curPrompt.title; document.getElementById('mBody').textContent = curPrompt.content; document.getElementById('overlay').classList.add('open'); }
 function closeModal() { document.getElementById('overlay').classList.remove('open'); }
@@ -787,17 +808,22 @@ function toggleTheme() { const html = document.documentElement; const current = 
 const savedTheme = localStorage.getItem('theme') || 'dark';
 document.documentElement.setAttribute('data-theme', savedTheme);
 
-// Init
+// Inisialisasi awal
 loadKeys();
 if (isKeyValid()) {
-  document.getElementById('keyPanel').style.display = 'none';
-  document.getElementById('mainContent').classList.add('active');
-  document.getElementById('userBadge').style.display = 'flex';
   const keyData = checkKey(currentKey);
-  if (keyData) document.getElementById('keyExpiry').innerHTML = `🔑 valid until ${new Date(keyData.expiry).toLocaleDateString('id-ID')}`;
-  loadPrompts();
+  if (keyData) {
+    const expiryDate = new Date(keyData.expiry).toLocaleDateString('id-ID');
+    enterVault(expiryDate);
+  } else {
+    logout();
+  }
+} else {
+  // Untuk demo/development, kita tidak otomatis memberikan akses. Biarkan panel key muncul.
+  console.log("Tidak ada key valid, menampilkan panel akses");
 }
-if (validKeys.length === 0 && !currentKey) addKey('DEMO2024', 1);
+window.approveKey = function(key, days) { addKey(key, days); if (currentKey === key) location.reload(); return true; };
+window.rejectKey = function(key) { if (currentKey === key) { alert('Key ditolak'); logout(); } };
 </script>
 </body>
 </html>
