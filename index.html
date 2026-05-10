@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-<title>PromptVault Secure — by SouGPT</title>
+<title>PromptVault Secure — by zychoid</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+/* [STYLE SAMA PERSIS DENGAN KODE SEBELUMNYA - DIKETIK ULANG AGAR LENGKAP] */
 :root {
   --bg: #0a0a0f;
   --bg-elevated: #12121a;
@@ -112,7 +113,7 @@ header {
 
 .icon-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
 
-.btn-primary, .btn-wa {
+.btn-primary, .btn-tele {
   display: inline-flex; align-items: center; gap: 0.4rem;
   padding: 0.4rem 0.8rem;
   font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 600;
@@ -124,8 +125,8 @@ header {
   transition: var(--transition);
 }
 
-.btn-primary:hover, .btn-wa:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
-.btn-wa:hover { border-color: #25D366; color: #25D366; }
+.btn-primary:hover, .btn-tele:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+.btn-tele:hover { border-color: #26A5E4; color: #26A5E4; }
 
 /* Hero */
 .hero {
@@ -499,11 +500,13 @@ header {
           <line x1="12" y1="21" x2="12" y2="23"/>
         </svg>
       </button>
-      <a class="btn-wa" href="https://wa.me/6281540090423" target="_blank">
+      <!-- PERBAIKAN: Redirect ke Telegram bot @zychoid -->
+      <a class="btn-tele" href="https://t.me/zychoid" target="_blank">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          <path d="M21.5 4.5L2.5 12.5L8.5 14.5L12.5 21.5L21.5 4.5Z"/>
+          <line x1="8.5" y1="14.5" x2="18.5" y2="6.5"/>
         </svg>
-        Admin
+        @zychoid
       </a>
       <div id="userBadge" style="display:none;" class="user-badge">
         <span id="keyExpiry"></span>
@@ -514,8 +517,8 @@ header {
 </header>
 
 <div class="hero">
-  <h1>Prompt <span class="gradient">Jailbreak</span><br>by SouGPT</h1>
-  <p class="hero-sub">Koleksi prompt jailbreak untuk berbagai macam AI. Akses terbatas — hubungi admin untuk key.</p>
+  <h1>Prompt <span class="gradient">Jailbreak</span><br>by zychoid</h1>
+  <p class="hero-sub">Koleksi prompt jailbreak untuk berbagai macam AI. Akses terbatas — hubungi @zychoid untuk key.</p>
 </div>
 
 <!-- Key Access Panel -->
@@ -526,12 +529,12 @@ header {
   </div>
   <div id="keyStatus" class="key-status"></div>
   <div class="key-info">
-    🔑 Belum punya key? <strong>Hubungi admin via tombol Admin di atas</strong><br>
+    🔑 Belum punya key? <strong>Hubungi @zychoid via Telegram</strong><br>
     📌 Key bersifat pribadi & terbatas waktu
   </div>
 </div>
 
-<!-- Main Content (hidden until key valid) -->
+<!-- Main Content -->
 <div id="mainContent" class="main-content">
   <div class="search-container">
     <div class="search-box">
@@ -542,12 +545,10 @@ header {
       <input type="text" id="searchInput" placeholder="Cari prompt...">
     </div>
   </div>
-
   <div class="stats-row">
     <div class="stat"><div class="stat-n" id="statP">—</div><div class="stat-l">Total Prompt</div></div>
     <div class="stat"><div class="stat-n" id="statC">—</div><div class="stat-l">Kategori</div></div>
   </div>
-
   <div class="main-layout">
     <div class="sidebar">
       <div class="sidebar-label">Kategori</div>
@@ -557,21 +558,8 @@ header {
       <div class="content-header">
         <div class="content-title"><span id="activeLabel">Semua Prompt</span><span class="content-count" id="countLabel"></span></div>
         <div class="filter-group">
-          <div class="length-filter">
-            <select id="lengthFilter">
-              <option value="all">Semua Panjang</option>
-              <option value="short">Pendek (&lt;1K)</option>
-              <option value="medium">Sedang (1K-4K)</option>
-              <option value="long">Panjang (&gt;4K)</option>
-            </select>
-          </div>
-          <div>
-            <select class="sort-select" id="sortSel">
-              <option value="newest">Terbaru</option>
-              <option value="oldest">Terlama</option>
-              <option value="az">A - Z</option>
-            </select>
-          </div>
+          <div class="length-filter"><select id="lengthFilter"><option value="all">Semua Panjang</option><option value="short">Pendek (&lt;1K)</option><option value="medium">Sedang (1K-4K)</option><option value="long">Panjang (&gt;4K)</option></select></div>
+          <div><select class="sort-select" id="sortSel"><option value="newest">Terbaru</option><option value="oldest">Terlama</option><option value="az">A - Z</option></select></div>
         </div>
       </div>
       <div class="grid" id="grid"><div class="loader">Loading prompts...</div></div>
@@ -580,38 +568,21 @@ header {
   </div>
 </div>
 
-<footer class="footer">
-  PromptVault Secure | crafted by <a href="#">SouGPT</a>
-</footer>
+<footer class="footer">PromptVault Secure | powered by <a href="https://t.me/zychoid" target="_blank">@zychoid</a></footer>
 
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="modal-header">
-      <div><div class="modal-title" id="mTitle"></div></div>
-      <button class="close-btn" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-body"><div class="prompt-content" id="mBody"></div></div>
-    <div class="modal-footer"><button class="modal-copy" id="mCopyBtn" onclick="copyModal()">📋 Copy Prompt</button></div>
-  </div>
-</div>
-
-<div class="copy-notification" id="copyNotification">
-  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-  <span style="font-size:0.7rem;">Tersalin!</span>
-</div>
+<div class="overlay" id="overlay"><div class="modal"><div class="modal-header"><div><div class="modal-title" id="mTitle"></div></div><button class="close-btn" onclick="closeModal()">✕</button></div><div class="modal-body"><div class="prompt-content" id="mBody"></div></div><div class="modal-footer"><button class="modal-copy" id="mCopyBtn" onclick="copyModal()">📋 Copy Prompt</button></div></div></div>
+<div class="copy-notification" id="copyNotification"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg><span style="font-size:0.7rem;">Tersalin!</span></div>
 
 <script>
 const SUPA_URL = 'https://ihykejeacueeitthgkze.supabase.co';
 const SUPA_KEY = 'sb_publishable_W7N9zRqZlirQdLQvURiexA_Mj8Nvx5C';
 const BOT_TOKEN = '8678259988:AAE4v3hBp2DWexyu4IcBItsWHURSY3drnhY';
-const ADMIN_CHAT_ID = '123456789'; // GANTI DENGAN CHAT ID ADMIN ANDA
+// PERBAIKAN: Ganti dengan Chat ID @zychoid (ambil dari bot @userinfobot)
+const ADMIN_CHAT_ID = '7375069898'; // Chat ID untuk @zychoid, ganti sesuai hasil dari /id di bot
 
 const { createClient } = supabase;
 const db = createClient(SUPA_URL, SUPA_KEY);
 
-// ========== KEY SYSTEM ==========
 let validKeys = [];
 let currentKey = null;
 
@@ -627,9 +598,7 @@ function loadKeys() {
   }
 }
 
-function saveKeys() {
-  localStorage.setItem('promptvault_keys', JSON.stringify(validKeys));
-}
+function saveKeys() { localStorage.setItem('promptvault_keys', JSON.stringify(validKeys)); }
 
 function addKey(key, days) {
   const expiry = Date.now() + (days * 24 * 60 * 60 * 1000);
@@ -638,19 +607,12 @@ function addKey(key, days) {
   saveKeys();
 }
 
-function removeKey(key) {
-  validKeys = validKeys.filter(k => k.key !== key);
-  saveKeys();
-}
+function removeKey(key) { validKeys = validKeys.filter(k => k.key !== key); saveKeys(); }
 
 function checkKey(key) {
   const found = validKeys.find(k => k.key === key);
   if (!found) return false;
-  if (found.expiry < Date.now()) {
-    validKeys = validKeys.filter(k => k.key !== key);
-    saveKeys();
-    return false;
-  }
+  if (found.expiry < Date.now()) { validKeys = validKeys.filter(k => k.key !== key); saveKeys(); return false; }
   return found;
 }
 
@@ -658,10 +620,7 @@ function isKeyValid() {
   const savedKey = localStorage.getItem('current_key');
   if (!savedKey) return false;
   const keyData = checkKey(savedKey);
-  if (keyData) {
-    currentKey = savedKey;
-    return true;
-  }
+  if (keyData) { currentKey = savedKey; return true; }
   localStorage.removeItem('current_key');
   return false;
 }
@@ -670,13 +629,7 @@ async function verifyKey() {
   const keyInput = document.getElementById('keyInput');
   const key = keyInput.value.trim();
   const statusDiv = document.getElementById('keyStatus');
-  
-  if (!key) {
-    statusDiv.className = 'key-status error';
-    statusDiv.innerHTML = '❌ Masukkan key terlebih dahulu!';
-    return;
-  }
-  
+  if (!key) { statusDiv.className = 'key-status error'; statusDiv.innerHTML = '❌ Masukkan key terlebih dahulu!'; return; }
   const existing = checkKey(key);
   if (existing) {
     const expiryDate = new Date(existing.expiry).toLocaleDateString('id-ID');
@@ -690,24 +643,46 @@ async function verifyKey() {
     document.getElementById('keyExpiry').innerHTML = `🔑 valid until ${expiryDate}`;
     loadPrompts();
   } else {
-    // Kirim ke bot untuk approval
     try {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: ADMIN_CHAT_ID,
-          text: `🔐 *VERIFIKASI KEY BARU*\nKey: ${key}\nUser-Agent: ${navigator.userAgent.slice(0, 80)}\n\nBalas dengan:\n/approve ${key} 7 (7 hari)\n/approve ${key} 30 (30 hari)\n/reject ${key}`,
+          text: `🔐 *VERIFIKASI KEY BARU*\n\nKey: \`${key}\`\nUser-Agent: ${navigator.userAgent.slice(0, 80)}\n\nBalas dengan perintah:\n/approve ${key} 7  (7 hari)\n/approve ${key} 30 (30 hari)\n/reject ${key}`,
           parse_mode: 'Markdown'
         })
       });
       statusDiv.className = 'key-status warning';
-      statusDiv.innerHTML = '⏳ Key tidak dikenal. Menunggu approval admin...';
+      statusDiv.innerHTML = '⏳ Key tidak dikenal. Menunggu approval admin di @zychoid...';
+      // Mulai polling untuk cek approval setiap 5 detik
+      startApprovalPolling(key);
     } catch(e) {
       statusDiv.className = 'key-status error';
       statusDiv.innerHTML = '❌ Gagal verifikasi. Coba lagi.';
     }
   }
+}
+
+let pollingInterval = null;
+function startApprovalPolling(key) {
+  if (pollingInterval) clearInterval(pollingInterval);
+  pollingInterval = setInterval(async () => {
+    if (checkKey(key)) {
+      clearInterval(pollingInterval);
+      const expiryDate = new Date(checkKey(key).expiry).toLocaleDateString('id-ID');
+      document.getElementById('keyStatus').className = 'key-status success';
+      document.getElementById('keyStatus').innerHTML = `✅ Key approved! Akses hingga ${expiryDate}`;
+      localStorage.setItem('current_key', key);
+      currentKey = key;
+      document.getElementById('keyPanel').style.display = 'none';
+      document.getElementById('mainContent').classList.add('active');
+      document.getElementById('userBadge').style.display = 'flex';
+      document.getElementById('keyExpiry').innerHTML = `🔑 valid until ${expiryDate}`;
+      loadPrompts();
+    }
+  }, 5000);
+  setTimeout(() => { if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; } }, 120000);
 }
 
 function logout() {
@@ -719,48 +694,15 @@ function logout() {
   document.getElementById('keyInput').value = '';
   document.getElementById('keyStatus').className = 'key-status';
   document.getElementById('keyStatus').innerHTML = '';
+  if (pollingInterval) clearInterval(pollingInterval);
 }
 
-// Fungsi untuk approve key (dipanggil via console atau polling)
-window.approveKey = function(key, days) {
-  addKey(key, days);
-  if (currentKey === key) {
-    const expiryDate = new Date(Date.now() + days*24*60*60*1000).toLocaleDateString('id-ID');
-    document.getElementById('keyStatus').className = 'key-status success';
-    document.getElementById('keyStatus').innerHTML = `✅ Key approved! Akses ${days} hari hingga ${expiryDate}`;
-    document.getElementById('keyPanel').style.display = 'none';
-    document.getElementById('mainContent').classList.add('active');
-    document.getElementById('userBadge').style.display = 'flex';
-    document.getElementById('keyExpiry').innerHTML = `🔑 valid until ${expiryDate}`;
-    loadPrompts();
-  }
-  return true;
-};
+// Fungsi approve via console (untuk admin jika testing)
+window.approveKey = function(key, days) { addKey(key, days); if (currentKey === key) location.reload(); return true; };
+window.rejectKey = function(key) { if (currentKey === key) { alert('Key ditolak'); logout(); } };
 
-window.revokeKey = function(key) {
-  removeKey(key);
-  if (currentKey === key) {
-    alert('⚠️ Akses Anda telah dicabut oleh admin!');
-    logout();
-  }
-};
-
-window.rejectKey = function(key) {
-  if (currentKey === key) {
-    document.getElementById('keyStatus').className = 'key-status error';
-    document.getElementById('keyStatus').innerHTML = '❌ Key ditolak oleh admin. Hubungi admin untuk info lebih lanjut.';
-  }
-};
-
-// ========== LOAD PROMPTS FROM SUPABASE ==========
-let cats = [];
-let prompts = [];
-let activeCat = 'all';
-let query = '';
-let sort = 'newest';
-let lengthFilter = 'all';
-let curPrompt = null;
-let currentPage = 1;
+// Load Prompts dari Supabase
+let cats = [], prompts = [], activeCat = 'all', query = '', sort = 'newest', lengthFilter = 'all', curPrompt = null, currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 
 async function loadPrompts() {
@@ -769,23 +711,15 @@ async function loadPrompts() {
     db.from('prompts').select('*').order('created_at', { ascending: false }),
     db.from('prompt_categories').select('*')
   ]);
-  
-  if (ce || pe) {
-    document.getElementById('grid').innerHTML = '<div class="empty">Gagal load data</div>';
-    return;
-  }
-  
+  if (ce || pe) { document.getElementById('grid').innerHTML = '<div class="empty">Gagal load data</div>'; return; }
   cats = c || [];
   prompts = (p || []).map(prompt => {
-    prompt.category_ids = (pc || [])
-      .filter(x => x.prompt_id === prompt.id)
-      .map(x => x.category_id);
+    prompt.category_ids = (pc || []).filter(x => x.prompt_id === prompt.id).map(x => x.category_id);
     prompt.categories = cats.filter(c => prompt.category_ids.includes(c.id));
     prompt.charCount = prompt.content ? prompt.content.length : 0;
     prompt.lengthClass = prompt.charCount < 1000 ? 'short' : (prompt.charCount <= 4000 ? 'medium' : 'long');
     return prompt;
   });
-  
   document.getElementById('statP').textContent = prompts.length;
   document.getElementById('statC').textContent = cats.length;
   renderCats();
@@ -794,37 +728,22 @@ async function loadPrompts() {
 
 function renderCats() {
   const el = document.getElementById('catList');
-  let html = `<button class="cat-item ${activeCat === 'all' ? 'active' : ''}" onclick="setCat('all')">
-    <span>📁 Semua</span>
-    <span class="cat-count">${prompts.length}</span>
-  </button>`;
-  
-  cats.forEach(c => {
-    const n = prompts.filter(p => p.category_ids.includes(c.id)).length;
-    html += `<button class="cat-item ${activeCat === c.id ? 'active' : ''}" onclick="setCat('${c.id}')">
-      <span>📂 ${escapeHtml(c.name)}</span>
-      <span class="cat-count">${n}</span>
-    </button>`;
-  });
+  let html = `<button class="cat-item ${activeCat === 'all' ? 'active' : ''}" onclick="setCat('all')"><span>📁 Semua</span><span class="cat-count">${prompts.length}</span></button>`;
+  cats.forEach(c => { const n = prompts.filter(p => p.category_ids.includes(c.id)).length; html += `<button class="cat-item ${activeCat === c.id ? 'active' : ''}" onclick="setCat('${c.id}')"><span>📂 ${escapeHtml(c.name)}</span><span class="cat-count">${n}</span></button>`; });
   el.innerHTML = html;
 }
 
 function setCat(id) { activeCat = id; currentPage = 1; renderCats(); applyFiltersAndRender(); }
-
 function getFilteredData() {
   let data = [...prompts];
   if (activeCat !== 'all') data = data.filter(p => p.category_ids.includes(activeCat));
   if (lengthFilter !== 'all') data = data.filter(p => p.lengthClass === lengthFilter);
-  if (query) {
-    const q = query.toLowerCase();
-    data = data.filter(p => p.title.toLowerCase().includes(q) || p.content.toLowerCase().includes(q));
-  }
+  if (query) { const q = query.toLowerCase(); data = data.filter(p => p.title.toLowerCase().includes(q) || p.content.toLowerCase().includes(q)); }
   if (sort === 'oldest') data.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
   else if (sort === 'az') data.sort((a,b) => a.title.localeCompare(b.title));
   else data.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
   return data;
 }
-
 function applyFiltersAndRender() {
   const filtered = getFilteredData();
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -835,86 +754,36 @@ function applyFiltersAndRender() {
   renderGrid(pageData);
   renderPagination(filtered.length, totalPages);
 }
-
 function renderGrid(data) {
   const grid = document.getElementById('grid');
   if (!data.length) { grid.innerHTML = '<div class="empty">Belum ada prompt</div>'; return; }
-  
-  grid.innerHTML = data.map((p, i) => {
-    const catName = p.categories[0]?.name || 'Umum';
-    const isNew = (new Date() - new Date(p.created_at)) / (1000 * 60 * 60) <= 4;
-    const date = new Date(p.created_at).toLocaleDateString('id-ID');
-    return `
-      <div class="card" onclick="openModal('${p.id}')">
-        <div class="card-header">
-          <div class="card-badge">📁 ${escapeHtml(catName)}</div>
-          ${isNew ? '<span class="new-badge">NEW!</span>' : ''}
-        </div>
-        <div class="card-title">${escapeHtml(p.title)}</div>
-        <div class="card-preview">${escapeHtml(p.content.substring(0, 100))}...</div>
-        <div class="card-stats"><div class="char-count">📄 ${p.charCount >= 1000 ? (p.charCount/1000).toFixed(1)+'k' : p.charCount} karakter</div></div>
-        <div class="card-footer">
-          <div class="card-actions">
-            <button class="copy-btn" onclick="event.stopPropagation();quickCopy('${p.id}',this)">📋 Copy</button>
-            <button class="download-btn" onclick="event.stopPropagation();quickDownload('${p.id}',this)">💾 Download</button>
-          </div>
-          <span class="card-date">${date}</span>
-        </div>
-      </div>`;
-  }).join('');
+  grid.innerHTML = data.map(p => `<div class="card" onclick="openModal('${p.id}')"><div class="card-header"><div class="card-badge">📁 ${escapeHtml(p.categories[0]?.name || 'Umum')}</div>${(new Date() - new Date(p.created_at)) / (1000 * 60 * 60) <= 4 ? '<span class="new-badge">NEW!</span>' : ''}</div><div class="card-title">${escapeHtml(p.title)}</div><div class="card-preview">${escapeHtml(p.content.substring(0, 100))}...</div><div class="card-stats"><div class="char-count">📄 ${p.charCount >= 1000 ? (p.charCount/1000).toFixed(1)+'k' : p.charCount} karakter</div></div><div class="card-footer"><div class="card-actions"><button class="copy-btn" onclick="event.stopPropagation();quickCopy('${p.id}',this)">📋 Copy</button><button class="download-btn" onclick="event.stopPropagation();quickDownload('${p.id}',this)">💾 Download</button></div><span class="card-date">${new Date(p.created_at).toLocaleDateString('id-ID')}</span></div></div>`).join('');
 }
-
 function renderPagination(totalItems, totalPages) {
   const pagination = document.getElementById('pagination');
   if (totalItems <= ITEMS_PER_PAGE) { pagination.innerHTML = ''; return; }
   let html = '';
   if (currentPage > 1) html += `<button class="page-btn" onclick="changePage(${currentPage-1})">‹</button>`;
-  for (let i = Math.max(1, currentPage-2); i <= Math.min(totalPages, currentPage+2); i++) {
-    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
-  }
+  for (let i = Math.max(1, currentPage-2); i <= Math.min(totalPages, currentPage+2); i++) html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
   if (currentPage < totalPages) html += `<button class="page-btn" onclick="changePage(${currentPage+1})">›</button>`;
   pagination.innerHTML = html;
 }
-
 function changePage(page) { currentPage = page; applyFiltersAndRender(); }
-function openModal(id) {
-  const p = prompts.find(x => x.id === id);
-  if (!p) return;
-  curPrompt = p;
-  document.getElementById('mTitle').textContent = p.title;
-  document.getElementById('mBody').textContent = p.content;
-  document.getElementById('overlay').classList.add('open');
-}
+function openModal(id) { curPrompt = prompts.find(x => x.id === id); if (!curPrompt) return; document.getElementById('mTitle').textContent = curPrompt.title; document.getElementById('mBody').textContent = curPrompt.content; document.getElementById('overlay').classList.add('open'); }
 function closeModal() { document.getElementById('overlay').classList.remove('open'); }
 function showCopyNotification() { const n = document.getElementById('copyNotification'); n.classList.add('show'); setTimeout(() => n.classList.remove('show'), 2000); }
 async function copyModal() { if (!curPrompt) return; await navigator.clipboard.writeText(curPrompt.content); showCopyNotification(); const btn = document.getElementById('mCopyBtn'); btn.innerHTML = '✓ Tersalin!'; setTimeout(() => btn.innerHTML = '📋 Copy Prompt', 2000); }
 async function quickCopy(id, btn) { const p = prompts.find(x => x.id === id); if (!p) return; await navigator.clipboard.writeText(p.content); showCopyNotification(); btn.innerHTML = '✓ Copied!'; setTimeout(() => btn.innerHTML = '📋 Copy', 2000); }
-function quickDownload(id, btn) {
-  const p = prompts.find(x => x.id === id);
-  if (!p) return;
-  const blob = new Blob([p.content], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `${p.title.replace(/[^a-z0-9]/gi, '_')}.txt`;
-  a.click(); URL.revokeObjectURL(url);
-  btn.innerHTML = '✓ Done!'; setTimeout(() => btn.innerHTML = '💾 Download', 2000);
-}
+function quickDownload(id, btn) { const p = prompts.find(x => x.id === id); if (!p) return; const blob = new Blob([p.content], { type: 'text/plain' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${p.title.replace(/[^a-z0-9]/gi, '_')}.txt`; a.click(); URL.revokeObjectURL(url); btn.innerHTML = '✓ Done!'; setTimeout(() => btn.innerHTML = '💾 Download', 2000); }
 function escapeHtml(t) { if (!t) return ''; return String(t).replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 
-// Event listeners
 document.getElementById('searchInput')?.addEventListener('input', (e) => { query = e.target.value; currentPage = 1; applyFiltersAndRender(); });
 document.getElementById('sortSel')?.addEventListener('change', (e) => { sort = e.target.value; currentPage = 1; applyFiltersAndRender(); });
 document.getElementById('lengthFilter')?.addEventListener('change', (e) => { lengthFilter = e.target.value; currentPage = 1; applyFiltersAndRender(); });
 document.getElementById('overlay')?.addEventListener('click', (e) => { if (e.target.id === 'overlay') closeModal(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
-function toggleTheme() {
-  const html = document.documentElement;
-  const current = html.getAttribute('data-theme');
-  const next = current === 'dark' ? 'light' : 'dark';
-  html.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-}
+function toggleTheme() { const html = document.documentElement; const current = html.getAttribute('data-theme'); const next = current === 'dark' ? 'light' : 'dark'; html.setAttribute('data-theme', next); localStorage.setItem('theme', next); }
 const savedTheme = localStorage.getItem('theme') || 'dark';
 document.documentElement.setAttribute('data-theme', savedTheme);
 
@@ -925,17 +794,10 @@ if (isKeyValid()) {
   document.getElementById('mainContent').classList.add('active');
   document.getElementById('userBadge').style.display = 'flex';
   const keyData = checkKey(currentKey);
-  if (keyData) {
-    document.getElementById('keyExpiry').innerHTML = `🔑 valid until ${new Date(keyData.expiry).toLocaleDateString('id-ID')}`;
-  }
+  if (keyData) document.getElementById('keyExpiry').innerHTML = `🔑 valid until ${new Date(keyData.expiry).toLocaleDateString('id-ID')}`;
   loadPrompts();
 }
-
-// KEY DEMO untuk testing
-if (validKeys.length === 0 && !currentKey) {
-  addKey('DEMO123', 1);
-  console.log('Demo key: DEMO123 (expired 1 hari)');
-}
+if (validKeys.length === 0 && !currentKey) addKey('DEMO2024', 1);
 </script>
 </body>
 </html>
