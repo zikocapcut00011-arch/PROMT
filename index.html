@@ -112,7 +112,7 @@ header {
 
 .icon-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
 
-.btn-primary, .btn-tele {
+.btn-tele {
   display: inline-flex; align-items: center; gap: 0.4rem;
   padding: 0.4rem 0.8rem;
   font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 600;
@@ -124,7 +124,6 @@ header {
   transition: var(--transition);
 }
 
-.btn-primary:hover, .btn-tele:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
 .btn-tele:hover { border-color: #26A5E4; color: #26A5E4; }
 
 .hero {
@@ -175,6 +174,7 @@ header {
   font-family: monospace;
   font-size: 0.9rem;
   outline: none;
+  letter-spacing: 1px;
 }
 
 .key-input-group input:focus {
@@ -214,14 +214,16 @@ header {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: rgba(16,185,129,0.15);
+  background: rgba(99,102,241,0.15);
   border-radius: 2rem;
   padding: 0.3rem 1rem;
+  border: 1px solid rgba(99,102,241,0.3);
 }
 
 .user-badge span {
   font-size: 0.75rem;
-  color: #10b981;
+  color: var(--accent);
+  font-weight: 500;
 }
 
 .logout-btn {
@@ -517,18 +519,19 @@ header {
 
 <div class="hero">
   <h1>Prompt <span class="gradient">Jailbreak</span><br>by zychoid</h1>
-  <p class="hero-sub">Koleksi prompt jailbreak untuk berbagai macam AI. Akses terbatas — hubungi @zychoid untuk key.</p>
+  <p class="hero-sub">Koleksi prompt jailbreak premium. Masukkan key akses untuk membuka vault.</p>
 </div>
 
 <div id="keyPanel" class="key-panel">
   <div class="key-input-group">
     <input type="text" id="keyInput" placeholder="Masukkan Access Key" autocomplete="off">
-    <button onclick="verifyKey()">Akses</button>
+    <button onclick="verifyKey()">Akses Vault</button>
   </div>
   <div id="keyStatus" class="key-status"></div>
   <div class="key-info">
-    🔑 Belum punya key? <strong>Hubungi @zychoid via Telegram</strong><br>
-    📌 Key bersifat pribadi & terbatas waktu
+    🔑 <strong>Key Akses: 404ZY</strong><br>
+    Masukkan key diatas untuk mengakses semua prompt jailbreaker.<br>
+    📌 Key bersifat statis & unlimited akses.
   </div>
 </div>
 
@@ -565,7 +568,7 @@ header {
   </div>
 </div>
 
-<footer class="footer">PromptVault Secure | powered by <a href="https://t.me/zychoid" target="_blank">@zychoid</a></footer>
+<footer class="footer">PromptVault Secure | powered by <a href="https://t.me/zychoid" target="_blank">@zychoid</a> | Key: 404ZY</footer>
 
 <div class="overlay" id="overlay"><div class="modal"><div class="modal-header"><div><div class="modal-title" id="mTitle"></div></div><button class="close-btn" onclick="closeModal()">✕</button></div><div class="modal-body"><div class="prompt-content" id="mBody"></div></div><div class="modal-footer"><button class="modal-copy" id="mCopyBtn" onclick="copyModal()">📋 Copy Prompt</button></div></div></div>
 <div class="copy-notification" id="copyNotification"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg><span style="font-size:0.7rem;">Tersalin!</span></div>
@@ -573,127 +576,61 @@ header {
 <script>
 const SUPA_URL = 'https://ihykejeacueeitthgkze.supabase.co';
 const SUPA_KEY = 'sb_publishable_W7N9zRqZlirQdLQvURiexA_Mj8Nvx5C';
-const BOT_TOKEN = '8678259988:AAE4v3hBp2DWexyu4IcBItsWHURSY3drnhY';
-const ADMIN_CHAT_ID = '7375069898';
 const { createClient } = supabase;
 const db = createClient(SUPA_URL, SUPA_KEY);
 
-let validKeys = [];
-let currentKey = null;
-let pollingInterval = null;
+// ========== KEY STATIS 404ZY ==========
+const MASTER_KEY = "404ZY";
+let currentKeyValid = false;
 let prompts = [], cats = [];
 let activeCat = 'all', query = '', sort = 'newest', lengthFilter = 'all', curPrompt = null, currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 
-function loadKeys() {
-  const saved = localStorage.getItem('promptvault_keys');
-  if (saved) {
-    try {
-      const keys = JSON.parse(saved);
-      const now = Date.now();
-      validKeys = keys.filter(k => k.expiry > now);
-      saveKeys();
-    } catch(e) { validKeys = []; }
-  }
-}
-
-function saveKeys() { localStorage.setItem('promptvault_keys', JSON.stringify(validKeys)); }
-
-function addKey(key, days) {
-  const expiry = Date.now() + (days * 24 * 60 * 60 * 1000);
-  validKeys = validKeys.filter(k => k.key !== key);
-  validKeys.push({ key, expiry, createdAt: Date.now() });
-  saveKeys();
-}
-
-function checkKey(key) {
-  const found = validKeys.find(k => k.key === key);
-  if (!found) return false;
-  if (found.expiry < Date.now()) { 
-    validKeys = validKeys.filter(k => k.key !== key); 
-    saveKeys(); 
-    return false; 
-  }
-  return found;
-}
-
 function isKeyValid() {
-  const savedKey = localStorage.getItem('current_key');
-  if (!savedKey) return false;
-  const keyData = checkKey(savedKey);
-  if (keyData) { 
-    currentKey = savedKey; 
-    return true; 
+  const saved = localStorage.getItem('vault_access');
+  if (saved === 'true') {
+    currentKeyValid = true;
+    return true;
   }
-  localStorage.removeItem('current_key');
   return false;
 }
 
-async function verifyKey() {
+function verifyKey() {
   const keyInput = document.getElementById('keyInput');
-  const key = keyInput.value.trim();
+  const key = keyInput.value.trim().toUpperCase();
   const statusDiv = document.getElementById('keyStatus');
-  if (!key) { statusDiv.className = 'key-status error'; statusDiv.innerHTML = '❌ Masukkan key terlebih dahulu!'; return; }
   
-  const existing = checkKey(key);
-  if (existing) {
-    const expiryDate = new Date(existing.expiry).toLocaleDateString('id-ID');
+  if (!key) {
+    statusDiv.className = 'key-status error';
+    statusDiv.innerHTML = '❌ Masukkan key terlebih dahulu!';
+    return;
+  }
+  
+  if (key === MASTER_KEY) {
     statusDiv.className = 'key-status success';
-    statusDiv.innerHTML = `✅ Key valid! Akses hingga ${expiryDate}`;
-    localStorage.setItem('current_key', key);
-    currentKey = key;
-    enterVault(expiryDate);
+    statusDiv.innerHTML = '✅ Key valid! Akses penuh diberikan.';
+    localStorage.setItem('vault_access', 'true');
+    currentKeyValid = true;
+    enterVault();
   } else {
-    try {
-      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: ADMIN_CHAT_ID,
-          text: `🔐 *VERIFIKASI KEY BARU*\n\nKey: \`${key}\`\nUser-Agent: ${navigator.userAgent.slice(0, 80)}\n\nBalas dengan perintah:\n/approve ${key} 7  (7 hari)\n/approve ${key} 30 (30 hari)\n/reject ${key}`,
-          parse_mode: 'Markdown'
-        })
-      });
-      statusDiv.className = 'key-status warning';
-      statusDiv.innerHTML = '⏳ Key tidak dikenal. Menunggu approval admin di @zychoid...';
-      startApprovalPolling(key);
-    } catch(e) {
-      statusDiv.className = 'key-status error';
-      statusDiv.innerHTML = '❌ Gagal verifikasi. Coba lagi.';
-    }
+    statusDiv.className = 'key-status error';
+    statusDiv.innerHTML = '❌ Key salah! Gunakan key: 404ZY';
+    localStorage.removeItem('vault_access');
+    currentKeyValid = false;
   }
 }
 
-function startApprovalPolling(key) {
-  if (pollingInterval) clearInterval(pollingInterval);
-  pollingInterval = setInterval(async () => {
-    if (checkKey(key)) {
-      clearInterval(pollingInterval);
-      pollingInterval = null;
-      const keyData = checkKey(key);
-      const expiryDate = new Date(keyData.expiry).toLocaleDateString('id-ID');
-      document.getElementById('keyStatus').className = 'key-status success';
-      document.getElementById('keyStatus').innerHTML = `✅ Key approved! Akses hingga ${expiryDate}`;
-      localStorage.setItem('current_key', key);
-      currentKey = key;
-      enterVault(expiryDate);
-    }
-  }, 5000);
-  setTimeout(() => { if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; } }, 120000);
-}
-
-function enterVault(expiryDate) {
+function enterVault() {
   document.getElementById('keyPanel').style.display = 'none';
   document.getElementById('mainContent').classList.add('active');
   document.getElementById('userBadge').style.display = 'flex';
-  document.getElementById('keyExpiry').innerHTML = `🔑 valid until ${expiryDate}`;
+  document.getElementById('keyExpiry').innerHTML = `🔓 Akses Unlimited | Key: ${MASTER_KEY}`;
   loadPrompts();
 }
 
 function logout() {
-  if (pollingInterval) clearInterval(pollingInterval);
-  localStorage.removeItem('current_key');
-  currentKey = null;
+  localStorage.removeItem('vault_access');
+  currentKeyValid = false;
   document.getElementById('keyPanel').style.display = 'block';
   document.getElementById('mainContent').classList.remove('active');
   document.getElementById('userBadge').style.display = 'none';
@@ -702,7 +639,7 @@ function logout() {
   document.getElementById('keyStatus').innerHTML = '';
   prompts = [];
   cats = [];
-  document.getElementById('grid').innerHTML = '<div class="loader">Akses dimulai setelah verifikasi key</div>';
+  document.getElementById('grid').innerHTML = '<div class="loader">Akses ditutup. Masukkan key untuk masuk kembali.</div>';
   document.getElementById('catList').innerHTML = '<div class="loader">Kategori akan tampil setelah login</div>';
 }
 
@@ -714,7 +651,7 @@ async function loadPrompts() {
       db.from('prompt_categories').select('*')
     ]);
     if (ce || pe) { 
-      document.getElementById('grid').innerHTML = '<div class="empty">Gagal memuat data, coba refresh</div>'; 
+      document.getElementById('grid').innerHTML = '<div class="empty">Gagal memuat data dari database. Coba refresh halaman.</div>'; 
       console.error(ce, pe);
       return; 
     }
@@ -734,12 +671,16 @@ async function loadPrompts() {
     applyFiltersAndRender();
   } catch (err) {
     console.error(err);
-    document.getElementById('grid').innerHTML = '<div class="empty">Error koneksi database</div>';
+    document.getElementById('grid').innerHTML = '<div class="empty">Error koneksi ke database. Periksa jaringan.</div>';
   }
 }
 
 function renderCats() {
   const el = document.getElementById('catList');
+  if (!cats.length) {
+    el.innerHTML = '<div class="loader">Kategori kosong</div>';
+    return;
+  }
   let html = `<button class="cat-item ${activeCat === 'all' ? 'active' : ''}" onclick="setCat('all')"><span>📁 Semua</span><span class="cat-count">${prompts.length}</span></button>`;
   cats.forEach(c => { 
     const n = prompts.filter(p => p.category_ids.includes(c.id)).length; 
@@ -808,22 +749,14 @@ function toggleTheme() { const html = document.documentElement; const current = 
 const savedTheme = localStorage.getItem('theme') || 'dark';
 document.documentElement.setAttribute('data-theme', savedTheme);
 
-// Inisialisasi awal
-loadKeys();
+// Inisialisasi: cek apakah sudah punya akses tersimpan
 if (isKeyValid()) {
-  const keyData = checkKey(currentKey);
-  if (keyData) {
-    const expiryDate = new Date(keyData.expiry).toLocaleDateString('id-ID');
-    enterVault(expiryDate);
-  } else {
-    logout();
-  }
+  enterVault();
 } else {
-  // Untuk demo/development, kita tidak otomatis memberikan akses. Biarkan panel key muncul.
-  console.log("Tidak ada key valid, menampilkan panel akses");
+  console.log("Belum login, silakan masukkan key 404ZY");
+  // Tampilkan panel key dengan jelas
+  document.getElementById('keyPanel').style.display = 'block';
 }
-window.approveKey = function(key, days) { addKey(key, days); if (currentKey === key) location.reload(); return true; };
-window.rejectKey = function(key) { if (currentKey === key) { alert('Key ditolak'); logout(); } };
 </script>
 </body>
 </html>
